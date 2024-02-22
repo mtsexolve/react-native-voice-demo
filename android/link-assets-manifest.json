@@ -1,0 +1,41 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/res/font/MTSCompact-Black.ttf",
+      "sha1": "e761567c8be0c05f0b3194a6c7eccbc8b4746d3a"
+    },
+    {
+      "path": "src/res/font/MTSCompact-Bold.ttf",
+      "sha1": "86f7b71cd0848874567b21d1e865b3280befe87e"
+    },
+    {
+      "path": "src/res/font/MTSCompact-Medium.ttf",
+      "sha1": "70b384a3d8b0a2583985190d3cbe921670c5f49b"
+    },
+    {
+      "path": "src/res/font/MTSCompact-Regular.ttf",
+      "sha1": "223d8733e2d5fcafe0c85ca44338c08e4d5ac35a"
+    },
+    {
+      "path": "src/res/font/MTSWide-Black.ttf",
+      "sha1": "fee3ff3a1257f6868666246261551cb1936635e0"
+    },
+    {
+      "path": "src/res/font/MTSWide-Bold.ttf",
+      "sha1": "c59c7b62f6527ed8e28da343b7f85a384423dcca"
+    },
+    {
+      "path": "src/res/font/MTSWide-Light.ttf",
+      "sha1": "32042ab168169039da6ccd4174ece47018081a06"
+    },
+    {
+      "path": "src/res/font/MTSWide-Medium.ttf",
+      "sha1": "11411801e1e99ee4c2c7aebad29b5ecb85ae86a9"
+    },
+    {
+      "path": "src/res/font/MTSWide-Regular.ttf",
+      "sha1": "abe6a05f7696dfe8b7ae04235d27aca21f72f525"
+    }
+  ]
+}
