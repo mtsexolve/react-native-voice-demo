@@ -2,7 +2,6 @@ import {
   RegistrationEvent,
   RegistrationError,
   Call,
-  CallError,
   CallClient,
   CallEvent,
   Communicator,
@@ -57,7 +56,6 @@ function setupDevicePushTokenDispatch(client: CallClient) {
   });
 }
 
-
 function setupRegistrationStateDispatch(client: CallClient) {
   client.on(RegistrationEvent.NotRegistered, ({stateName}) => {
     console.debug('RegistrationEvent.NotRegistered');
@@ -79,15 +77,15 @@ function setupRegistrationStateDispatch(client: CallClient) {
     console.debug('RegistrationEvent.NoConnection');
     store.dispatch(setRegistrationState(stateName));
   });
-  client.on(RegistrationEvent.Error, ({stateName, errorObj , errorMessage}) => {
+  client.on(RegistrationEvent.Error, ({stateName, errorObj, errorMessage}) => {
     console.debug(`RegistrationEvent.Error: ${errorObj} ${errorMessage}`);
     Alert.alert('Activation error', errorMessage, [
       {text: 'OK', onPress: () => {}},
     ]);
-    if( errorObj == RegistrationError.BadCredentials ){
-     store.dispatch(setRegistrationState("NotRegistered"));
+    if (errorObj === RegistrationError.BadCredentials) {
+      store.dispatch(setRegistrationState('NotRegistered'));
     } else {
-     store.dispatch(setRegistrationState(stateName));
+      store.dispatch(setRegistrationState(stateName));
     }
   });
 }
@@ -113,11 +111,11 @@ function setupCallStateDispatch(client: CallClient) {
     callsMap.set(call.id, call);
     store.dispatch(resume(toCallData(call)));
   });
-  client.on(CallEvent.Error, ({call, errorObj , errorMessage}) => {
-    console.debug(`CallEvent.Error id: ${call.id} error: ${errorObj} ${errorMessage}`);
-    Alert.alert('Call error', errorMessage, [
-      {text: 'OK', onPress: () => {}},
-    ]);
+  client.on(CallEvent.Error, ({call, errorObj, errorMessage}) => {
+    console.debug(
+      `CallEvent.Error id: ${call.id} error: ${errorObj} ${errorMessage}`,
+    );
+    Alert.alert('Call error', errorMessage, [{text: 'OK', onPress: () => {}}]);
     callsMap.delete(call.id);
     store.dispatch(error(toCallData(call)));
   });

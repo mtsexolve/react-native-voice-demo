@@ -28,15 +28,18 @@ const App = () => {
       .initialize({
         logConfiguration: {logLevel: LogLevel.Debug},
         enableNotifications: true,
-        enableBackgroundRunning: false,
         androidNotificationConfiguration: {
           defaultIconName: 'ic_notification',
+          enableRingtone: false
         },
         callKitConfiguration: {
           iconTemplateImageResource: 'CallKitIcon',
           ringtoneSound: 'ringtone.wav',
           includeInRecents: true,
+          notifyInForeground: false,
+          enableDtmf: false,
         },
+        enableSecureConnection: false,
       })
       .then(() => {
         loadSipCredentials().then(sipCredentials => {
