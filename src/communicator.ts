@@ -6,9 +6,11 @@ import {
   CallEvent,
   Communicator,
   DevicePushTokenEvent,
+  CallPendingEvent,
+  CallUserAction
 } from '@exolve/react-native-voice-sdk';
-import {store} from './store';
-import {setRegistrationState} from './store/registrationSlice';
+import { store } from './store';
+import { setRegistrationState } from './store/registrationSlice';
 import {
   CallData,
   toCallData,
@@ -23,15 +25,18 @@ import {
   setCalls,
 } from './store/callsSlice';
 
-import {setDevicePushTokenSliceState} from './store/devicePushTokenSlice';
+import { setDevicePushTokenSliceState } from './store/devicePushTokenSlice';
 
-import {Alert} from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 export const communicator: Communicator = new Communicator();
 
 export const callClient: CallClient = communicator.callClient();
 
 export const callsMap = new Map<string, Call>();
+
+import { PERMISSIONS, Permission } from 'react-native-permissions';
+import { PermissionsRequester, PermissionsState } from './utils/PermissionsRequester';
 
 export function setActiveCalls(calls: Call[]) {
   const callDataArray: CallData[] = [];
@@ -50,37 +55,37 @@ export function setupCallClientDispatch(client: CallClient) {
 }
 
 function setupDevicePushTokenDispatch(client: CallClient) {
-  client.on(DevicePushTokenEvent, ({token}) => {
+  client.on(DevicePushTokenEvent, ({ token }) => {
     console.log('Device push token:', token);
     store.dispatch(setDevicePushTokenSliceState(token));
   });
 }
 
 function setupRegistrationStateDispatch(client: CallClient) {
-  client.on(RegistrationEvent.NotRegistered, ({stateName}) => {
+  client.on(RegistrationEvent.NotRegistered, ({ stateName }) => {
     console.debug('RegistrationEvent.NotRegistered');
     store.dispatch(setRegistrationState(stateName));
   });
-  client.on(RegistrationEvent.Registering, ({stateName}) => {
+  client.on(RegistrationEvent.Registering, ({ stateName }) => {
     console.debug('RegistrationEvent.Registering');
     store.dispatch(setRegistrationState(stateName));
   });
-  client.on(RegistrationEvent.Registered, ({stateName}) => {
+  client.on(RegistrationEvent.Registered, ({ stateName }) => {
     console.debug('RegistrationEvent.Registered');
     store.dispatch(setRegistrationState(stateName));
   });
-  client.on(RegistrationEvent.Offline, ({stateName}) => {
+  client.on(RegistrationEvent.Offline, ({ stateName }) => {
     console.debug('RegistrationEvent.Offline');
     store.dispatch(setRegistrationState(stateName));
   });
-  client.on(RegistrationEvent.NoConnection, ({stateName}) => {
+  client.on(RegistrationEvent.NoConnection, ({ stateName }) => {
     console.debug('RegistrationEvent.NoConnection');
     store.dispatch(setRegistrationState(stateName));
   });
-  client.on(RegistrationEvent.Error, ({stateName, errorObj, errorMessage}) => {
+  client.on(RegistrationEvent.Error, ({ stateName, errorObj, errorMessage }) => {
     console.debug(`RegistrationEvent.Error: ${errorObj} ${errorMessage}`);
     Alert.alert('Activation error', errorMessage, [
-      {text: 'OK', onPress: () => {}},
+      { text: 'OK', onPress: () => { } },
     ]);
     if (errorObj === RegistrationError.BadCredentials) {
       store.dispatch(setRegistrationState('NotRegistered'));
@@ -88,6 +93,29 @@ function setupRegistrationStateDispatch(client: CallClient) {
       store.dispatch(setRegistrationState(stateName));
     }
   });
+}
+
+function showUserActionRequiredToast(callPendingEvent: CallPendingEvent, callUserAction: CallUserAction) {
+  //Skip redundant toast
+  if (callUserAction == CallUserAction.EnableLocationProvider && callPendingEvent == CallPendingEvent.AcceptCall) {
+    return;
+  }
+  var toastMessage: string;
+  switch (callUserAction) {
+    case CallUserAction.NeedsLocationAccess: {
+      toastMessage = "No location access for " + ((callPendingEvent == CallPendingEvent.AcceptCall) ? "accept" : "answering") + " call."
+      break;
+    }
+    case CallUserAction.EnableLocationProvider: {
+      toastMessage = "Disabled access to geolocation in notification panel"
+      break;
+    }
+    default: {
+      toastMessage = "action is null"
+      break;
+    }
+  }
+  (global as any)["toast"].show('Call location error: ' + toastMessage, { type: "error" })
 }
 
 function setupCallStateDispatch(client: CallClient) {
@@ -111,11 +139,11 @@ function setupCallStateDispatch(client: CallClient) {
     callsMap.set(call.id, call);
     store.dispatch(resume(toCallData(call)));
   });
-  client.on(CallEvent.Error, ({call, errorObj, errorMessage}) => {
+  client.on(CallEvent.Error, ({ call, errorObj, errorMessage }) => {
     console.debug(
       `CallEvent.Error id: ${call.id} error: ${errorObj} ${errorMessage}`,
     );
-    Alert.alert('Call error', errorMessage, [{text: 'OK', onPress: () => {}}]);
+    (global as any)["toast"].show('Call error: ' + errorMessage, { type: "error" })
     callsMap.delete(call.id);
     store.dispatch(error(toCallData(call)));
   });
@@ -133,5 +161,17 @@ function setupCallStateDispatch(client: CallClient) {
     console.debug(`CallEvent.Mute id: ${call.id}`);
     callsMap.set(call.id, call);
     store.dispatch(mute(toCallData(call)));
+  });
+  client.on(CallEvent.UserActionRequired, ({ call, callPendingEvent, callUserAction }) => {
+    console.debug(`CallEvent.UserActionRequired id: ${call.id}`);
+    if (callUserAction == CallUserAction.NeedsLocationAccess && callPendingEvent == CallPendingEvent.AcceptCall) {
+      const permissions: Permission[] = (Platform.OS === 'ios') ? [PERMISSIONS.IOS.LOCATION_WHEN_IN_USE] : [PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION, PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION];
+      PermissionsRequester.requestPermissions(permissions, (state: PermissionsState) => {
+        call.accept()
+      })
+    } else if (callUserAction == CallUserAction.EnableLocationProvider && callPendingEvent == CallPendingEvent.AcceptCall) {
+      call.accept()
+    }
+    showUserActionRequiredToast(callPendingEvent, callUserAction);
   });
 }

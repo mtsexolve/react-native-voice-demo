@@ -76,10 +76,11 @@ public class MainApplication extends Application implements ReactApplication {
             public void onReceive(Context context, Intent intent) {
                 String action = Optional.ofNullable(intent).map(Intent::getAction).orElse("");
                 if (action.equals(ExolveReactNativeModule.ACTION_TOKEN_REQUEST)) {
+                    Log.d(NAME, "onReceive ExolveReactNativeModule.ACTION_TOKEN_REQUEST");
                     MessagingService.requestToken(context);
                 }
             }
-        }, new IntentFilter(ExolveReactNativeModule.ACTION_TOKEN_REQUEST));
+        }, new IntentFilter(ExolveReactNativeModule.ACTION_TOKEN_REQUEST), RECEIVER_EXPORTED);
     }
 
     @Override

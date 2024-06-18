@@ -25,7 +25,7 @@ const CommonStyles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   accountView: {
-    height: 500,
+    height: 550,
     flexDirection: 'column',
     backgroundColor: Colors.white,
   },
@@ -36,11 +36,11 @@ const CommonStyles = StyleSheet.create({
     gap: 10,
   },
   sendLogsButton: {
-    marginVertical: 8,
+    marginVertical: 0,
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 0,
     paddingHorizontal: 12,
     borderRadius: 0,
     elevation: 0,

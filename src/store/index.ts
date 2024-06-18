@@ -3,6 +3,7 @@ import registrationReducer from './registrationSlice';
 import callsReducer from './callsSlice';
 import devicePushTokenReducer from './devicePushTokenSlice';
 import versionInfoReducer from './versionInfoSlice';
+import settingsReducer from './settingsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     calls: callsReducer,
     devicePushToken: devicePushTokenReducer,
     versionInfo: versionInfoReducer,
+    settings: settingsReducer,
   },
 });
 
