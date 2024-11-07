@@ -4,6 +4,7 @@ import callsReducer from './callsSlice';
 import devicePushTokenReducer from './devicePushTokenSlice';
 import versionInfoReducer from './versionInfoSlice';
 import settingsReducer from './settingsSlice';
+import audioRouteReducer from './audioRouteSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     devicePushToken: devicePushTokenReducer,
     versionInfo: versionInfoReducer,
     settings: settingsReducer,
+    audioRoute: audioRouteReducer,
   },
 });
 

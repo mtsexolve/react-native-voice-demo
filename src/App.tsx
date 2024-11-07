@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import {Platform} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import CallView from './CallView';
-import {LogLevel} from '@exolve/react-native-voice-sdk';
+import {LogLevel,AndroidTelecomIntegrationMode} from '@exolve/react-native-voice-sdk';
 import {createStackNavigator} from '@react-navigation/stack';
 import {
   callClient,
@@ -52,11 +52,12 @@ const App = () => {
             defaultIconName: 'ic_notification',
             enableRingtone: isAndroidRingtoneEnabled
           },
+          androidTelecomIntegrationMode: AndroidTelecomIntegrationMode.SelfManagedService,
           callKitConfiguration: {
             iconTemplateImageResource: 'CallKitIcon',
             ringtoneSound: 'ringtone.wav',
             includeInRecents: true,
-            notifyInForeground: false,
+            notifyInForeground: true,
             enableDtmf: false,
           },
           enableSecureConnection: false,
@@ -77,7 +78,7 @@ const App = () => {
         });
     });
     if(Platform.OS === 'android'){
-      PermissionsRequester.requestPermissions([PERMISSIONS.ANDROID.POST_NOTIFICATIONS], (state: PermissionsState) => {})
+      PermissionsRequester.requestPermissions([PERMISSIONS.ANDROID.POST_NOTIFICATIONS,PERMISSIONS.ANDROID.READ_PHONE_STATE], (state: PermissionsState) => {});
     }
   }, []);
 

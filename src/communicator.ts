@@ -6,8 +6,11 @@ import {
   CallEvent,
   Communicator,
   DevicePushTokenEvent,
+  AudioRoutesEvent,
   CallPendingEvent,
-  CallUserAction
+  CallUserAction,
+  AudioRouteData,
+  AudioRoute
 } from '@exolve/react-native-voice-sdk';
 import { store } from './store';
 import { setRegistrationState } from './store/registrationSlice';
@@ -23,9 +26,12 @@ import {
   resume,
   error,
   setCalls,
+  noConnection
 } from './store/callsSlice';
 
 import { setDevicePushTokenSliceState } from './store/devicePushTokenSlice';
+
+import { setSpeakerSliceState  } from './store/audioRouteSlice';
 
 import { Alert, Platform } from 'react-native';
 
@@ -47,17 +53,36 @@ export function setActiveCalls(calls: Call[]) {
   store.dispatch(setCalls(callDataArray));
 }
 
+
+
 export function setupCallClientDispatch(client: CallClient) {
   console.log('setupCallClientDispatch');
   setupRegistrationStateDispatch(client);
   setupCallStateDispatch(client);
   setupDevicePushTokenDispatch(client);
+  setupAudioRoutesDispatch(client);
+}
+
+function fixSpeakerStateOnIOS(){
+  if (Platform.OS === 'ios') {
+    callClient.setAudioRoute((store.getState().audioRoute.isSpeakerOn) ?  AudioRoute.Speaker : AudioRoute.Earpiece);
+  } 
 }
 
 function setupDevicePushTokenDispatch(client: CallClient) {
   client.on(DevicePushTokenEvent, ({ token }) => {
     console.log('Device push token:', token);
     store.dispatch(setDevicePushTokenSliceState(token));
+  });
+}
+
+function setupAudioRoutesDispatch(client: CallClient) {
+  client.on(AudioRoutesEvent.Changed, ({ routes }) => {
+    routes.map((route : AudioRouteData) => {
+      if(route.route == AudioRoute.Speaker){
+        store.dispatch(setSpeakerSliceState(route.isActive));
+      }
+    });
   });
 }
 
@@ -123,11 +148,13 @@ function setupCallStateDispatch(client: CallClient) {
     console.debug(`CallEvent.New id: ${call.id}`);
     callsMap.set(call.id, call);
     store.dispatch(newCall(toCallData(call)));
+    fixSpeakerStateOnIOS();
   });
   client.on(CallEvent.Connected, (call: Call) => {
     console.debug(`CallEvent.Connected id: ${call.id}`);
     callsMap.set(call.id, call);
     store.dispatch(connected(toCallData(call)));
+    fixSpeakerStateOnIOS();
   });
   client.on(CallEvent.OnHold, (call: Call) => {
     console.debug(`CallEvent.OnHold id: ${call.id}`);
@@ -138,6 +165,7 @@ function setupCallStateDispatch(client: CallClient) {
     console.debug(`CallEvent.Resumed id: ${call.id}`);
     callsMap.set(call.id, call);
     store.dispatch(resume(toCallData(call)));
+    fixSpeakerStateOnIOS();
   });
   client.on(CallEvent.Error, ({ call, errorObj, errorMessage }) => {
     console.debug(
@@ -173,5 +201,10 @@ function setupCallStateDispatch(client: CallClient) {
       call.accept()
     }
     showUserActionRequiredToast(callPendingEvent, callUserAction);
+  });
+  client.on(CallEvent.ConnectionLost, (call: Call) => {
+    console.debug(`CallEvent.ConnectionLost id: ${call.id} ${call.state}`);
+    callsMap.set(call.id, call);
+    store.dispatch(noConnection(toCallData(call)));
   });
 }

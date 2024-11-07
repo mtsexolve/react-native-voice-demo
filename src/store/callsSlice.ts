@@ -75,6 +75,9 @@ export const callsSlice = createSlice({
     dtmfSequence: (state, action) => {
       return {calls: updateCall(state.calls, action.payload)};
     },
+    noConnection: (state, action) => {
+      return {calls: updateCall(state.calls, action.payload)};
+    },
   },
 });
 
@@ -89,6 +92,7 @@ export const {
   conference,
   mute,
   dtmfSequence,
+  noConnection,
 } = callsSlice.actions;
 
 export const selectActiveCalls = (state: any) => {

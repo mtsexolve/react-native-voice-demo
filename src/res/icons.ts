@@ -6,7 +6,9 @@ import CallAdd from './svg/callview/ic_add_new_call.svg';
 import CallEnd from './svg/callview/ic_end_calls.svg';
 import CallSpeaker from './svg/callview/ic_speaker_basic.svg';
 import CallHold from './svg/callview/ic_hold_call_basic.svg';
+import CallResume from './svg/callview/ic_resume_call_basic.svg';
 import CallTransfer from './svg/ic_transfer_call.svg'
+import CallNoConnection from './svg/callview/ic_no_wifi.svg'
 
 export const Icons = {
   DtmfCall,
@@ -18,5 +20,7 @@ export const Icons = {
   CallEnd,
   CallSpeaker,
   CallHold,
+  CallResume,
   CallTransfer,
+  CallNoConnection,
 };

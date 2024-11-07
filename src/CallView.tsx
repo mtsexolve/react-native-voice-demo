@@ -17,7 +17,8 @@ import {RootStackParamList} from './navigation';
 import {CallItem} from './CallItem';
 import {useSelector} from 'react-redux';
 import {CallData, selectActiveCalls, dtmfSequence} from './store/callsSlice';
-import {CallState} from '@exolve/react-native-voice-sdk';
+import {selectSpeakerState} from './store/audioRouteSlice';
+import {AudioRoute, CallState} from '@exolve/react-native-voice-sdk';
 import {callClient, callsMap} from './communicator';
 import CallOptionsButton from './components/CallOptionsButton';
 import DialPad from './DialPad';
@@ -31,12 +32,12 @@ import { selectContactPhone } from 'react-native-select-contact';
 type CallViewProps = StackScreenProps<RootStackParamList, 'Calls'>;
 
 export default function CallView({navigation}: CallViewProps) {
-  const [isSpeakerOn, setSpeakerOn] = useState(false);
   const [isMuted, setMuted] = useState(false);
   const [isDtmfVisible, setDtmfVisible] = useState(false);
   const [activeCallId, setActiveCallId] = useState('');
   const [currentDTMFInput, setCurrentDTMFInput] = useState('');
   const calls : CallData[] = useSelector(selectActiveCalls);
+  const isSpeakerOn = useSelector(selectSpeakerState);
 
   useEffect(() => {
     if (Platform.OS == 'android') {
@@ -62,19 +63,12 @@ export default function CallView({navigation}: CallViewProps) {
         let activeCallData = calls.find((c: CallData) => c.id == activeCall.id);
         if(activeCallData != undefined)
             setCurrentDTMFInput(activeCallData.dtmfSequence)
-        let callDataConnected  = calls.find((c: CallData) => c.state === CallState.Connected);
-        if (callDataConnected !== undefined)
-            updateSpeakerState(); 
     } else {
       setMuted(false)
       setActiveCallId('')     
       navigation.navigate('Home');
     }
   }, [calls, navigation]);
-
-  const updateSpeakerState = () => {
-    callClient.getSpeakerOn().then(on => setSpeakerOn(on));
-  };
 
   const findActiveCall = () => {
     let callData  = calls.find((c: CallData) => c.state === CallState.Connected);
@@ -108,8 +102,7 @@ export default function CallView({navigation}: CallViewProps) {
   };
 
   const toggleSpeaker = () => {
-    callClient.setSpeakerOn(!isSpeakerOn);
-    updateSpeakerState()
+    callClient.setAudioRoute((isSpeakerOn) ?  AudioRoute.Earpiece : AudioRoute.Speaker);
   };
 
   const addCall = () => {

@@ -8,16 +8,25 @@ import {CallDirection, CallState} from '@exolve/react-native-voice-sdk';
 export function CallItem(props: {callId: string, isActive:boolean}) {
   const call = callsMap.get(props.callId);
 
-  const number = call?.number;
+  const formattedNumber = call?.formattedNumber;
   const isOnHold = call?.state === CallState.OnHold;
   const isIncomingNew = call?.state === CallState.New && call?.direction == CallDirection.Incoming
+  const isNoConnection = call?.state === CallState.LostConnection
+
 
   return (
     <View style={{alignSelf: 'stretch', marginTop: 20}}>
       <View style={[Styles.callViewCallInfo,{ backgroundColor: props.isActive ? Colors.mts_bg_grey : Colors.mts_bg_grey_lighter }]}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <Text style={Styles.callViewCallInfoText}>{`${number}:`}</Text>
-          <Text style={Styles.callViewCallInfoText}>{`${call?.state}`}</Text>
+          <Text style={Styles.callViewCallInfoText}>{`${formattedNumber}:`}</Text>
+          {isNoConnection ? (
+            <React.Fragment>
+              <Icons.CallNoConnection style={Styles.callViewCallInfoIcon} width="22" height="22" />
+              <Text style={Styles.callViewCallInfoText}>No connect</Text>
+            </React.Fragment>
+          ) : (
+            <Text style={Styles.callViewCallInfoText}>{`${call?.state}`}</Text>
+          )}
         </View>
         <View style={{flex: 1, flexDirection: 'row', gap: 20}}>
           <Pressable
@@ -36,14 +45,18 @@ export function CallItem(props: {callId: string, isActive:boolean}) {
             />
             <Text style={Styles.callViewCallInfoControlText}>Terminate</Text>
           </Pressable>
-          {!isIncomingNew && (
+          {!isIncomingNew && !isNoConnection && (
           <Pressable
             style={Styles.callViewCallInfoButton}
             onPress={() => {
               console.debug('hold pressed');
               isOnHold ? call?.resume() : call?.hold();
             }}>
-            <Icons.CallHold width="22" height="22" />
+            {isOnHold ? (
+                <Icons.CallResume width="22" height="22" />
+              ) : (
+                <Icons.CallHold width="22" height="22" /> 
+            )}
             <Text style={Styles.callViewCallInfoControlText}>
               {isOnHold ? 'Resume' : 'Hold'}
             </Text>
@@ -94,11 +107,14 @@ const Styles = StyleSheet.create({
   },
   callViewCallInfoText: {
     marginTop: 20,
-    marginLeft: 20,
     marginRight: 20,
     fontFamily: 'MTSCompact-Regular',
     fontSize: 17,
     color: Colors.call_card_number_text,
+  },
+  callViewCallInfoIcon: {
+    marginTop: 20,
+    marginRight: 5,
   },
   callViewCallInfoControlText: {
     marginLeft: 5,
