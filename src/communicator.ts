@@ -153,7 +153,11 @@ function setupCallStateDispatch(client: CallClient) {
   client.on(CallEvent.Connected, (call: Call) => {
     console.debug(`CallEvent.Connected id: ${call.id}`);
     callsMap.set(call.id, call);
-    store.dispatch(connected(toCallData(call)));
+    var callData = toCallData(call)
+    if( callData.start_time < 0 ){
+      callData.start_time = Date.now()
+    }
+    store.dispatch(connected(callData));
     fixSpeakerStateOnIOS();
   });
   client.on(CallEvent.OnHold, (call: Call) => {

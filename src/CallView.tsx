@@ -16,7 +16,7 @@ import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParamList} from './navigation';
 import {CallItem} from './CallItem';
 import {useSelector} from 'react-redux';
-import {CallData, selectActiveCalls, dtmfSequence} from './store/callsSlice';
+import {CallData, selectActiveCalls, dtmfSequence, setCalls} from './store/callsSlice';
 import {selectSpeakerState} from './store/audioRouteSlice';
 import {AudioRoute, CallState} from '@exolve/react-native-voice-sdk';
 import {callClient, callsMap} from './communicator';
@@ -30,6 +30,8 @@ import {
 import { selectContactPhone } from 'react-native-select-contact';
 
 type CallViewProps = StackScreenProps<RootStackParamList, 'Calls'>;
+
+var isFocused : boolean = true
 
 export default function CallView({navigation}: CallViewProps) {
   const [isMuted, setMuted] = useState(false);
@@ -51,6 +53,34 @@ export default function CallView({navigation}: CallViewProps) {
     }
   }, []);
 
+  useEffect(() => {
+    updateCallsDuration();
+    navigation.addListener('blur', () => {
+      isFocused = false;
+    })
+    navigation.addListener('focus', () => {
+      isFocused = true;
+    })
+    const interval = setInterval(() => {
+      if(isFocused)
+        updateCallsDuration();
+    }, 1000);
+    return () => {
+      clearInterval(interval)
+      navigation.removeListener('focus', () => {})
+      navigation.removeListener('blur', () => {})
+    };
+  }, [navigation]);
+
+  const updateCallsDuration = () => {
+    store.dispatch(setCalls(
+      store.getState().calls.calls.map(item => ({
+        ...item,
+        start_time: (item.start_time > 0) ?  item.start_time : - 1.0
+      }))
+    ));
+  }
+  
   useEffect(() => {
     if (calls.length === 0) {
       console.debug('No active calls, navigating to Home screen');
@@ -161,7 +191,7 @@ export default function CallView({navigation}: CallViewProps) {
 
 
   const callItems = calls.map((call: CallData) => {
-    return <CallItem callId={call.id} key={call.id} isActive={(call.id === activeCallId)}/>;
+    return <CallItem callId={call.id} key={call.id} start_time={call.start_time} isActive={(call.id === activeCallId)}/>;
   });
 
   const insets = useSafeAreaInsets();

@@ -6,6 +6,7 @@ export type CallData = {
   id: string;
   state: CallState;
   dtmfSequence: string;
+  start_time: number;
 };
 
 interface ActiveCallsState {
@@ -31,7 +32,8 @@ export function toCallData(call: Call): CallData {
   return {
     id: call.id,
     state: call.state,
-    dtmfSequence: (callData != undefined) ? callData?.dtmfSequence : "" 
+    dtmfSequence: (callData != undefined) ? callData?.dtmfSequence : "" ,
+    start_time: (callData != undefined) ? callData?.start_time : -1.0
   };
 }
 

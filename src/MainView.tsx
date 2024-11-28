@@ -17,12 +17,15 @@ import {
 
 const Tab = createBottomTabNavigator();
 
+var isFirstLaunch : boolean = true
+
 type MainViewProps = StackScreenProps<RootStackParamList, 'Home'>;
 export default function MainView({navigation}: MainViewProps) {
   const calls = useSelector(selectActiveCalls);
 
   useEffect(() => {
-    if (calls.some((c: CallData) => c.state === CallState.New)) {
+    if (calls.some((c: CallData) => c.state === CallState.New) || (isFirstLaunch && calls.length > 0)) {
+      isFirstLaunch = false;
       console.debug('Found a new call, navigating to Calls screen');
       navigation.navigate('Calls');
     }
